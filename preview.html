@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#dff3ff">
+  <title>Interactive Smart City 3D</title>
+  <script src="vendor/aframe-1.6.0.min.js"></script>
+  <script src="city.js?v=12"></script>
+  <style>
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; overflow: hidden; font-family: Inter, system-ui, sans-serif; background: #dff3ff; color: #073b73; }
+    button, a { font: inherit; -webkit-tap-highlight-color: transparent; }
+    .bar { position: fixed; z-index: 10; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; }
+    .bar a, .bar button { pointer-events: auto; min-width: 47px; min-height: 47px; padding: 0 13px; border: 0; border-radius: 13px; color: white; background: rgba(7,59,115,.91); font-weight: 850; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 7px 20px rgba(7,59,115,.18); }
+    .controls { display: flex; gap: 6px; }
+    .mission { position: fixed; z-index: 10; left: 10px; right: 10px; bottom: 10px; max-width: 650px; margin: auto; padding: 13px 15px; border: 1px solid rgba(7,59,115,.15); border-radius: 17px; background: rgba(255,255,255,.94); box-shadow: 0 13px 40px rgba(31,80,120,.18); text-align: center; }
+    .mission small { color: #0b78c9; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+    .mission p { margin: 5px 0 0; font-weight: 800; line-height: 1.35; }
+    .progress { display: flex; justify-content: center; gap: 7px; margin-top: 10px; }
+    .progress span { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: #073b73; background: #dce8ef; filter: grayscale(1); opacity: .5; transition: .25s ease; }
+    .progress span.found { color: white; background: #087052; filter: none; opacity: 1; transform: scale(1.08); }
+    .toast { position: fixed; z-index: 20; left: 50%; top: 76px; width: min(86vw, 410px); padding: 13px 15px; border-radius: 15px; transform: translateX(-50%); color: white; background: #087052; box-shadow: 0 12px 35px rgba(0,0,0,.2); text-align: center; font-weight: 850; pointer-events: none; }
+    .confetti { position: fixed; z-index: 19; inset: 0; overflow: hidden; pointer-events: none; }
+    .confetti i { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: fall 1.25s ease-in forwards; }
+    @keyframes fall { to { transform: translate3d(var(--drift), 105vh, 0) rotate(620deg); opacity: .9; } }
+    a-scene { width: 100vw !important; height: 100vh !important; }
+    .a-enter-vr, .a-enter-ar { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <a href="index.html">← Back</a>
+    <div class="controls">
+      <button id="turnLeft" type="button" aria-label="Turn city left">↶</button>
+      <button id="smaller" type="button" aria-label="Make city smaller">−</button>
+      <button id="larger" type="button" aria-label="Make city bigger">+</button>
+      <button id="turnRight" type="button" aria-label="Turn city right">↷</button>
+    </div>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+  <section class="mission">
+    <small>Collect all six smart city badges</small>
+    <p id="message">Drag to look around. Tap a building, sensor, bin, or vehicle to discover it.</p>
+    <div class="progress" id="progress" aria-label="Discovery progress"></div>
+  </section>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <a-scene embedded xr-mode-ui="enabled: false" background="color: #dff3ff" renderer="antialias: true; colorManagement: true">
+    <a-entity light="type: ambient; color: #ffffff; intensity: .82"></a-entity>
+    <a-entity light="type: directional; color: #ffffff; intensity: .88" position="3 7 5"></a-entity>
+    <a-entity id="city" smart-city position="0 -1.1 -1.6" rotation="0 -28 0" scale=".9 .9 .9"></a-entity>
+    <!-- The rig tilts the view down at the city; look-controls still lets children drag to look around. -->
+    <a-entity position="0 3.1 6.4" rotation="-24 0 0">
+      <a-entity camera look-controls="touchEnabled: true; mouseEnabled: true" cursor="rayOrigin: mouse" raycaster="objects: .smart-target"></a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const city = document.getElementById("city");
+    const toast = document.getElementById("toast");
+    const message = document.getElementById("message");
+    const progress = document.getElementById("progress");
+    const confetti = document.getElementById("confetti");
+    const icons = { energy: "☀️", traffic: "🚦", waste: "🗑️", green: "🌿", home: "🏠", transport: "🚌" };
+    const found = new Set();
+    let scale = .9;
+    let yaw = -28;
+    Object.entries(icons).forEach(([id, icon]) => {
+      const chip = document.createElement("span");
+      chip.textContent = icon;
+      chip.dataset.mission = id;
+      progress.appendChild(chip);
+    });
+    function celebrate(amount) {
+      const colors = ["#08a6d4", "#073b73", "#45e28b", "#f4c843", "#ef5c55"];
+      for (let i = 0; i < amount; i += 1) {
+        const piece = document.createElement("i");
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.background = colors[i % colors.length];
+        piece.style.setProperty("--drift", `${Math.round((Math.random() - .5) * 180)}px`);
+        piece.style.animationDelay = `${Math.random() * .25}s`;
+        confetti.appendChild(piece);
+        setTimeout(() => piece.remove(), 1700);
+      }
+    }
+    function setScale(next) {
+      scale = Math.max(.65, Math.min(1.25, next));
+      city.object3D.scale.setScalar(scale);
+    }
+    function setYaw(next) {
+      yaw = next;
+      city.setAttribute("rotation", `0 ${yaw} 0`);
+    }
+    // A portrait phone shows a narrow slice of the scene, so start smaller there.
+    if (window.innerWidth < window.innerHeight) setScale(.65);
+    document.getElementById("smaller").addEventListener("click", () => setScale(scale - .1));
+    document.getElementById("larger").addEventListener("click", () => setScale(scale + .1));
+    document.getElementById("turnLeft").addEventListener("click", () => setYaw(yaw + 20));
+    document.getElementById("turnRight").addEventListener("click", () => setYaw(yaw - 20));
+    document.addEventListener("smart-system-select", (event) => {
+      const selected = event.detail;
+      window.SmartCity.flashTarget(selected.element);
+      window.SmartCity.markFound(selected.id);
+      const isNew = !found.has(selected.id);
+      found.add(selected.id);
+      const chip = progress.querySelector(`[data-mission="${selected.id}"]`);
+      if (chip) chip.classList.add("found");
+      toast.textContent = found.size === 6 ? "🏆 Smart City Explorer! You found all six systems!" : `Yes — you found ${selected.title}! ${found.size}/6`;
+      message.textContent = selected.message;
+      toast.hidden = false;
+      if (isNew) celebrate(found.size === 6 ? 42 : 16);
+      clearTimeout(window.previewToastTimer);
+      window.previewToastTimer = setTimeout(() => { toast.hidden = true; }, found.size === 6 ? 3000 : 1900);
+    });
+  </script>
+</body>
+</html>

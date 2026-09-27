@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#073b73">
+  <title>Scan to Open Smart City AR</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; color: #10253e; background: radial-gradient(circle at 80% 10%, #d8f4ff, transparent 35rem), linear-gradient(150deg, #eef8ff, #ffffff); font-family: Inter, system-ui, sans-serif; }
+    main { width: min(920px, 100%); padding: clamp(24px, 5vw, 46px); border: 1px solid #cfe3ef; border-radius: 28px; background: rgba(255,255,255,.96); box-shadow: 0 22px 70px rgba(22,72,111,.16); text-align: center; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; color: #073b73; font-weight: 900; }
+    .brand-mark { display: grid; width: 43px; height: 43px; place-items: center; border-radius: 12px; color: white; background: linear-gradient(145deg, #0b78c9, #16b7d7); }
+    h1 { margin: 20px 0 8px; color: #073b73; font-size: clamp(2rem, 6vw, 4.4rem); line-height: 1; letter-spacing: -.045em; }
+    .lead { margin: 0 auto 20px; color: #53697f; font-size: clamp(1.05rem, 2.5vw, 1.35rem); line-height: 1.45; }
+    .qr { display: block; width: min(62vh, 560px, 88vw); height: auto; margin: 0 auto; border: 12px solid white; }
+    .steps { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px 20px; margin: 18px 0 0; color: #073b73; font-weight: 800; }
+    .steps span { white-space: nowrap; }
+    .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; }
+    a, button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 18px; border: 0; border-radius: 13px; color: white; background: #073b73; font: inherit; font-weight: 850; text-decoration: none; cursor: pointer; }
+    .download { background: #0b78c9; }
+    .note { margin: 16px 0 0; color: #667a8c; font-size: .92rem; }
+    @media print {
+      @page { size: A4 portrait; margin: 12mm; }
+      body { min-height: auto; padding: 0; background: white; }
+      main { width: 100%; padding: 10mm; border: 0; box-shadow: none; }
+      .qr { width: 125mm; }
+      .buttons, .note { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand"><span class="brand-mark">AR</span><span>Mindscape Smart City</span></div>
+    <h1>Scan to start</h1>
+    <p class="lead">Open the camera on your tablet and point it at the QR code. No typing and no installation needed.</p>
+    <img class="qr" src="assets/smart-city-ar-qr.png" alt="QR code that opens the Mindscape Smart City AR activity">
+    <div class="steps" aria-label="Instructions">
+      <span>1. Open Camera</span>
+      <span>2. Scan</span>
+      <span>3. Tap the link</span>
+    </div>
+    <div class="buttons">
+      <button type="button" onclick="window.print()">Print this page</button>
+      <a class="download" href="assets/smart-city-ar-qr.png" download="Mindscape-Smart-City-AR-QR.png">Download QR</a>
+      <a href="index.html">Open activity</a>
+    </div>
+    <p class="note">The QR opens the public Smart City AR website directly.</p>
+  </main>
+</body>
+</html>

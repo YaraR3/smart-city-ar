@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart City AR Marker</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; color: #10253e; background: #eef6fb; font-family: Inter, system-ui, sans-serif; }
+    main { width: min(820px, calc(100% - 28px)); margin: 24px auto; padding: 34px; border-radius: 22px; background: white; box-shadow: 0 18px 50px rgba(24,62,92,.14); text-align: center; }
+    h1 { margin: 0; color: #073b73; font-size: clamp(1.7rem, 5vw, 2.5rem); }
+    p { margin: 12px auto 22px; max-width: 620px; color: #53697f; font-size: 1.05rem; line-height: 1.5; }
+    .launch { display: flex; align-items: center; justify-content: center; gap: 16px; width: min(560px, 100%); margin: 0 auto 18px; padding: 12px; border: 1px solid #d7e6f2; border-radius: 16px; text-align: left; }
+    .launch img { width: 98px; margin: 0; }
+    .launch strong { display: block; color: #073b73; }
+    .launch span { color: #53697f; line-height: 1.4; }
+    .marker { display: block; width: min(470px, 90%); margin: 10px auto 26px; }
+    .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    a, button { display: inline-flex; min-height: 48px; align-items: center; padding: 0 18px; border: 0; border-radius: 12px; color: white; background: #0b78c9; font: inherit; font-weight: 850; text-decoration: none; cursor: pointer; }
+    a { background: #073b73; }
+    @media print {
+      body { background: white; }
+      main { width: 100%; margin: 0; padding: 12mm; box-shadow: none; }
+      .buttons { display: none; }
+      .launch img { width: 25mm; }
+      .marker { width: 128mm; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Smart City AR Marker</h1>
+    <p>This page is only for the Marker AR backup. Print it or display it on a second screen, keep the complete black border visible, and place it on a flat surface.</p>
+    <div class="launch">
+      <img src="assets/project-qr.png" alt="QR code that opens the Smart City AR project">
+      <div><strong>First, scan this QR code</strong><span>Open the project and select Marker AR backup.</span></div>
+    </div>
+    <img class="marker" src="assets/hiro.png" alt="Hiro marker for the smart city AR activity">
+    <div class="buttons">
+      <button type="button" onclick="window.print()">Print marker</button>
+      <a href="qr.html">Classroom QR</a>
+      <a href="index.html">Back to activity</a>
+    </div>
+  </main>
+</body>
+</html>

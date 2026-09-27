@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#07192d">
+  <title>Smart City Marker AR Backup</title>
+  <script src="vendor/aframe-1.6.0.min.js"></script>
+  <script src="vendor/aframe-ar-3.4.8.js"></script>
+  <script src="city.js?v=12"></script>
+  <style>
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; overflow: hidden; font-family: Inter, system-ui, sans-serif; background: #07192d; color: white; }
+    .topbar { position: fixed; z-index: 20; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; gap: 8px; padding: 12px; pointer-events: none; background: linear-gradient(180deg, rgba(5,24,43,.9), transparent); }
+    .topbar a, .topbar span, .topbar button { pointer-events: auto; min-height: 43px; display: inline-flex; align-items: center; padding: 0 13px; border: 0; border-radius: 12px; color: white; background: rgba(5,24,43,.84); text-decoration: none; font: inherit; font-weight: 850; }
+    .top-controls { display: flex; gap: 6px; }
+    .hint { position: fixed; z-index: 18; inset: 50% auto auto 50%; width: min(86vw, 430px); padding: 16px; border-radius: 16px; transform: translate(-50%,-50%); color: white; background: rgba(5,24,43,.86); text-align: center; line-height: 1.45; pointer-events: none; transition: opacity .25s; }
+    .hint.hidden { opacity: 0; }
+    .mission { position: fixed; z-index: 20; left: 10px; right: 10px; bottom: 10px; max-width: 650px; margin: auto; padding: 13px 15px; border-radius: 17px; background: rgba(5,24,43,.9); backdrop-filter: blur(10px); }
+    .mission small { color: #64d9ee; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+    .mission p { margin: 5px 0 0; font-weight: 800; line-height: 1.35; }
+    .toast { position: fixed; z-index: 30; left: 50%; top: 88px; width: max-content; max-width: 84vw; padding: 11px 14px; border-radius: 14px; transform: translateX(-50%); color: #12334d; background: white; box-shadow: 0 10px 30px rgba(0,0,0,.3); font-weight: 850; pointer-events: none; }
+    .a-enter-vr, .a-enter-ar, .a-orientation-modal { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="index.html">← Back</a>
+    <div class="top-controls">
+      <button id="smaller" type="button" aria-label="Make city smaller">−</button>
+      <button id="larger" type="button" aria-label="Make city bigger">+</button>
+      <span id="status">Looking for marker</span>
+    </div>
+  </div>
+  <div class="hint" id="hint">Point the tablet at the full black marker. This is the compatibility backup.</div>
+  <div class="toast" id="toast" hidden></div>
+  <section class="mission">
+    <small>Tap a smart object</small>
+    <p id="message">Explore the city and tap a building, sensor, bin, or vehicle.</p>
+  </section>
+
+  <a-scene embedded xr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" renderer="antialias: true; alpha: true; colorManagement: true; precision: medium" arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono; cameraParametersUrl: assets/camera_para.dat;">
+    <a-marker id="marker" type="pattern" url="assets/patt.hiro" emitevents="true" smooth="true" smooth-count="8" smooth-tolerance="0.01" smooth-threshold="3">
+      <a-entity id="city" smart-city scale=".2 .2 .2"></a-entity>
+    </a-marker>
+    <a-entity camera cursor="rayOrigin: mouse" raycaster="objects: .smart-target"></a-entity>
+  </a-scene>
+
+  <script>
+    const marker = document.getElementById("marker");
+    const city = document.getElementById("city");
+    const status = document.getElementById("status");
+    const hint = document.getElementById("hint");
+    const toast = document.getElementById("toast");
+    const message = document.getElementById("message");
+    let scale = .2;
+
+    marker.addEventListener("markerFound", () => {
+      status.textContent = "City found";
+      hint.classList.add("hidden");
+    });
+    marker.addEventListener("markerLost", () => {
+      status.textContent = "Looking for marker";
+      hint.classList.remove("hidden");
+    });
+    function setScale(next) {
+      scale = Math.max(.14, Math.min(.28, next));
+      city.setAttribute("scale", `${scale} ${scale} ${scale}`);
+    }
+    document.getElementById("smaller").addEventListener("click", () => setScale(scale - .02));
+    document.getElementById("larger").addEventListener("click", () => setScale(scale + .02));
+    document.addEventListener("smart-system-select", (event) => {
+      const selected = event.detail;
+      window.SmartCity.flashTarget(selected.element);
+      window.SmartCity.bounce(selected.id);
+      toast.textContent = `Yes — ${selected.title}!`;
+      toast.hidden = false;
+      message.textContent = selected.message;
+      clearTimeout(window.markerToastTimer);
+      window.markerToastTimer = setTimeout(() => { toast.hidden = true; }, 1800);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#073b73">
+  <meta name="description" content="A browser-based smart city augmented reality activity for young learners.">
+  <title>Smart City AR Explorer</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b78c9'/%3E%3Cpath d='M10 48V28l12-9 10 8 10-15 12 10v26H10z' fill='%23fff'/%3E%3Cpath d='M17 48V34h10v14m11 0V29h9v19' fill='%2316b7d7'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header shell">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">AR</span><span>Mindscape Smart City</span></div>
+    <span class="draft-tag">Tablet test draft</span>
+  </header>
+
+  <main>
+    <section class="hero shell">
+      <div>
+        <p class="eyebrow">From smart machines to smart cities</p>
+        <h1>Explore a smart city in AR</h1>
+        <p class="lead">Place a resizable city on a desk or the floor, walk around it, and tap the systems that keep it clean, safe, and energy efficient.</p>
+        <div class="actions">
+          <a class="button button-primary" href="ar.html">Start markerless AR</a>
+          <a class="button button-secondary" href="qr.html">Show classroom QR</a>
+          <a class="button button-secondary" href="preview.html">Interactive 3D backup</a>
+          <a class="button button-secondary" href="marker-ar.html">Marker AR backup</a>
+        </div>
+      </div>
+
+      <div class="city-orbit" aria-label="Stylized smart city preview">
+        <div class="city-card" aria-hidden="true">
+          <div class="city-block">☀</div><div class="city-block road"></div><div class="city-block">🚦</div>
+          <div class="city-block">♻</div><div class="city-block road"></div><div class="city-block">🌳</div>
+          <div class="city-block">🏠</div><div class="city-block road"></div><div class="city-block">🚌</div>
+        </div>
+        <span class="orbit-label">No installation needed</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <h2>Before you start</h2>
+        <div class="steps">
+          <article class="step"><span class="step-number">1</span><strong>Scan a surface</strong><p>Allow the camera, then move the tablet slowly over a desk or the floor.</p></article>
+          <article class="step"><span class="step-number">2</span><strong>Place the city</strong><p>When the glowing circle appears, tap it to place the city.</p></article>
+          <article class="step"><span class="step-number">3</span><strong>Explore and tap</strong><p>Walk around, resize or rotate the city, and tap each smart system.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <h2>Smart systems to find</h2>
+        <div class="systems">
+          <article class="system"><span class="system-icon">🚦</span><strong>Smart traffic light</strong><p>A camera sensor sees the bus waiting and turns the light green right on time.</p></article>
+          <article class="system"><span class="system-icon">🗑️</span><strong>Smart trash can</strong><p>Its sensor calls the garbage truck before the bin becomes too full.</p></article>
+          <article class="system"><span class="system-icon">☀️</span><strong>Clean power</strong><p>Blue solar panels and a wind turbine make electricity without smoke.</p></article>
+          <article class="system"><span class="system-icon">🌿</span><strong>Plant-covered building</strong><p>Trees on the balconies of two tall towers cool the buildings and clean the air.</p></article>
+          <article class="system"><span class="system-icon">🏠</span><strong>Smart thermostat</strong><p>The round thermostat learns the temperature people like.</p></article>
+          <article class="system"><span class="system-icon">🚌</span><strong>Electric bus</strong><p>A teal bus with a lightning bolt, like the electric buses between Jbeil and Beirut.</p></article>
+        </div>
+        <p class="privacy-note"><strong>Camera note:</strong> this activity uses the camera only inside the browser to understand the surface around the tablet. It does not record or upload video. If markerless AR is unavailable, the activity offers interactive 3D and marker-based backups.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">Mindscape Academy classroom prototype</footer>
+</body>
+</html>

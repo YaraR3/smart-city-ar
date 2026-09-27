@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#07192d">
+  <meta name="description" content="Place and explore an interactive smart city in markerless augmented reality.">
+  <title>Smart City Markerless AR</title>
+  <style>
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; overflow: hidden; font-family: Inter, system-ui, sans-serif; background: #07192d; color: white; }
+    button, a { font: inherit; -webkit-tap-highlight-color: transparent; }
+    a-scene, .a-canvas { width: 100vw !important; height: 100vh !important; z-index: 0 !important; }
+    .a-enter-vr, .a-enter-ar, .a-orientation-modal { display: none !important; }
+    #overlay { position: fixed !important; z-index: 2147483646 !important; inset: 0; pointer-events: auto !important; touch-action: manipulation; }
+    .topbar { position: absolute; top: 0; left: 0; right: 0; pointer-events: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: max(12px, env(safe-area-inset-top)) 12px 12px; background: linear-gradient(180deg, rgba(4,19,35,.9), transparent); }
+    .back, .status { min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 13px; color: white; background: rgba(4,24,43,.82); font-weight: 850; text-decoration: none; pointer-events: auto; touch-action: manipulation; }
+    .status { min-height: 39px; font-size: .88rem; pointer-events: none; }
+    .start-card { position: absolute; left: 50%; top: 50%; width: min(90vw, 470px); transform: translate(-50%,-50%); padding: 23px; border: 1px solid rgba(255,255,255,.2); border-radius: 24px; background: rgba(5,25,45,.94); box-shadow: 0 22px 70px rgba(0,0,0,.36); text-align: center; backdrop-filter: blur(15px); pointer-events: auto; }
+    .start-icon { display: grid; width: 62px; height: 62px; place-items: center; margin: 0 auto 13px; border-radius: 19px; background: linear-gradient(145deg, #0b78c9, #23c3d9); font-size: 1.9rem; }
+    .start-card h1 { margin: 0; font-size: clamp(1.55rem, 7vw, 2.2rem); line-height: 1.1; }
+    .start-card p { margin: 12px 0 18px; color: #d4e8f5; line-height: 1.5; }
+    .primary { width: 100%; min-height: 52px; border: 0; border-radius: 15px; color: #073b73; background: white; font-weight: 900; cursor: pointer; touch-action: manipulation; }
+    .primary:disabled { color: #8da0ae; background: #dbe5eb; }
+    .quick-backup { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; margin-top: 9px; border: 1px solid rgba(255,255,255,.3); border-radius: 14px; color: white; background: rgba(255,255,255,.08); font-weight: 850; text-decoration: none; }
+    .small-note { display: block; margin-top: 11px; color: #9ec1d7; font-size: .8rem; }
+    .fallback { margin-top: 17px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.16); }
+    .fallback p { margin: 0 0 11px; color: #ffe8b8; font-size: .92rem; }
+    .fallback-links { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fallback a { min-height: 46px; display: grid; place-items: center; padding: 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 12px; color: white; text-decoration: none; font-weight: 800; }
+    .placement-hint { position: absolute; top: 76px; left: 50%; width: min(88vw, 430px); transform: translateX(-50%); padding: 11px 15px; border-radius: 14px; background: rgba(4,24,43,.86); box-shadow: 0 8px 28px rgba(0,0,0,.2); text-align: center; font-weight: 800; line-height: 1.35; transition: opacity .2s; pointer-events: none; }
+    .placement-hint.hidden { opacity: 0; }
+    .controls { position: absolute; left: 50%; bottom: 165px; display: flex; gap: 7px; transform: translateX(-50%) translateY(12px); opacity: 0; transition: .2s ease; pointer-events: none; }
+    .controls.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
+    .control { min-width: 47px; min-height: 47px; padding: 0 12px; border: 1px solid rgba(255,255,255,.24); border-radius: 13px; color: white; background: rgba(5,25,45,.88); font-size: 1.15rem; font-weight: 900; box-shadow: 0 7px 22px rgba(0,0,0,.22); }
+    .replace { font-size: .8rem; }
+    .mission { position: absolute; left: 10px; right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); max-width: 660px; margin: auto; padding: 13px 14px; border: 1px solid rgba(255,255,255,.2); border-radius: 18px; background: rgba(5,25,45,.94); pointer-events: auto; }
+    .mission-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; color: #65ddef; font-size: .76rem; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+    .mission-row { display: flex; align-items: center; gap: 11px; }
+    #missionIcon { display: grid; flex: 0 0 44px; height: 44px; place-items: center; border-radius: 13px; background: rgba(255,255,255,.12); font-size: 1.35rem; }
+    #missionText { margin: 0; font-size: 1rem; font-weight: 800; line-height: 1.33; }
+    .mission-copy { min-width: 0; flex: 1; }
+    .hint-button { flex: 0 0 auto; min-height: 42px; padding: 0 12px; border: 1px solid rgba(255,255,255,.28); border-radius: 12px; color: white; background: rgba(255,255,255,.12); font-weight: 850; }
+    .progress { display: flex; justify-content: center; gap: 7px; margin-top: 10px; }
+    .progress span { display: grid; width: 29px; height: 29px; place-items: center; border: 1px solid rgba(255,255,255,.22); border-radius: 50%; background: rgba(255,255,255,.08); filter: grayscale(1); opacity: .46; transition: .25s ease; }
+    .progress span.found { border-color: #7aebad; background: #137b59; filter: none; opacity: 1; transform: scale(1.08); }
+    .success { position: absolute; left: 50%; top: 50%; width: min(88vw, 420px); transform: translate(-50%,-50%); padding: 23px; border-radius: 24px; color: #12334d; background: white; box-shadow: 0 24px 80px rgba(0,0,0,.4); text-align: center; pointer-events: auto; cursor: pointer; }
+    #successIcon { display: block; margin-bottom: 8px; font-size: 2.6rem; }
+    .success h2 { margin: 0; color: #087052; font-size: 1.45rem; }
+    .success p { margin: 10px 0 17px; line-height: 1.45; }
+    .badge-earned { display: inline-flex; margin: 10px 0 0; padding: 7px 11px; border-radius: 999px; color: #075b9f; background: #e3f5ff; font-size: .82rem; font-weight: 900; }
+    .success button { width: 100%; min-height: 49px; border: 0; border-radius: 13px; color: white; background: #0878bd; font-weight: 900; }
+    .toast { position: absolute; left: 50%; top: 126px; width: max-content; max-width: 84vw; transform: translate(-50%,-9px); padding: 10px 14px; border-radius: 18px; text-align: center; pointer-events: none; color: #13334d; background: #fff; box-shadow: 0 10px 32px rgba(0,0,0,.28); font-weight: 850; opacity: 0; transition: .2s ease; }
+    .toast.show { transform: translate(-50%,0); opacity: 1; }
+    .confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .confetti i { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: confetti-fall 1.25s ease-in forwards; }
+    @keyframes confetti-fall { to { transform: translate3d(var(--drift), 105vh, 0) rotate(620deg); opacity: .9; } }
+    @media (max-height: 620px) {
+      .controls { bottom: 151px; }
+      .mission { padding: 10px 12px; }
+      .mission-top { margin-bottom: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <div class="topbar">
+      <a class="back" href="index.html">← Back</a>
+      <span class="status" id="status">Ready to start</span>
+    </div>
+
+    <section class="start-card" id="startCard" aria-labelledby="startTitle">
+      <span class="start-icon" aria-hidden="true">🏙️</span>
+      <h1 id="startTitle">Place your smart city</h1>
+      <p id="startText">Move the tablet slowly, tap a desk or the floor, then walk around the city and find its smart systems.</p>
+      <button class="primary" id="startAR" type="button" disabled>Checking this tablet…</button>
+      <a class="quick-backup" href="preview.html">Open interactive 3D instead</a>
+      <small class="small-note">No marker and no installation needed</small>
+      <div class="fallback" id="fallback" hidden>
+        <p>Markerless AR is not supported on this tablet. Choose a backup:</p>
+        <div class="fallback-links">
+          <a href="preview.html">Interactive 3D</a>
+          <a href="marker-ar.html">Marker AR</a>
+        </div>
+      </div>
+    </section>
+
+    <p class="placement-hint hidden" id="placementHint">Move the tablet slowly over a desk or the floor.</p>
+
+    <div class="controls" id="controls" aria-label="City controls">
+      <button class="control" id="turnLeft" type="button" aria-label="Turn city left">↶</button>
+      <button class="control" id="smaller" type="button" aria-label="Make city smaller">−</button>
+      <button class="control" id="larger" type="button" aria-label="Make city bigger">+</button>
+      <button class="control" id="turnRight" type="button" aria-label="Turn city right">↷</button>
+      <button class="control replace" id="replace" type="button">Replace</button>
+    </div>
+
+    <section class="mission" aria-live="polite">
+      <div class="mission-top"><span>City detective mission</span><span id="missionCount">0 / 6 found</span></div>
+      <div class="mission-row">
+        <span id="missionIcon" aria-hidden="true">☀️</span>
+        <div class="mission-copy"><p id="missionText">Find something that makes clean energy.</p></div>
+        <button class="hint-button" id="hintButton" type="button">Hint</button>
+      </div>
+      <div class="progress" id="progress" aria-label="Mission progress"></div>
+    </section>
+
+    <section class="success" id="success" hidden aria-live="assertive">
+      <span id="successIcon" aria-hidden="true">☀️</span>
+      <h2 id="successTitle">Yes! You found it!</h2>
+      <span class="badge-earned" id="badgeEarned">Badge earned</span>
+      <p id="successMessage"></p>
+      <button id="nextMission" type="button">Next mission</button>
+    </section>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+  </div>
+
+  <template id="sceneTemplate">
+    <a-scene
+      embedded
+      xr-mode-ui="enabled: false; XRMode: ar"
+      device-orientation-permission-ui="enabled: false"
+      webxr="referenceSpaceType: local; requiredFeatures: hit-test; optionalFeatures: dom-overlay; overlayElement: #overlay"
+      renderer="antialias: true; alpha: true; colorManagement: true; precision: high"
+    >
+      <a-entity light="type: ambient; color: #ffffff; intensity: .8"></a-entity>
+      <a-entity light="type: directional; color: #ffffff; intensity: .9" position="2 5 3"></a-entity>
+      <a-ring id="reticle" visible="false" rotation="-90 0 0" radius-inner=".12" radius-outer=".18" color="#49e49b" material="shader: flat; opacity: .95; side: double"></a-ring>
+      <a-entity id="city" smart-city visible="false" scale=".2 .2 .2"></a-entity>
+      <a-entity id="placement" surface-placement></a-entity>
+      <a-camera></a-camera>
+    </a-scene>
+  </template>
+  <script src="boot-ar.js?v=12"></script>
+</body>
+</html>
