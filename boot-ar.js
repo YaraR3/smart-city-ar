@@ -52,10 +52,10 @@
     }, 15000);
 
     loadScript("vendor/aframe-1.6.0.min.js")
-      .then(function () { return loadScript("city.js?v=12"); })
+      .then(function () { return loadScript("city.js?v=13"); })
       .then(function () {
         window.__deferMarkerlessInit = true;
-        return loadScript("markerless.js?v=12");
+        return loadScript("markerless.js?v=13");
       })
       .then(function () {
         const template = document.getElementById("sceneTemplate");

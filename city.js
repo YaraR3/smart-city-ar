@@ -1032,7 +1032,16 @@
       if (!this.built) return;
       const dt = Math.min(delta || 16, 100) / 1000;
       this.now = time / 1000;
-      for (let i = 0; i < this.life.length; i += 1) this.life[i](this.now, dt);
+      for (let i = 0; i < this.life.length; i += 1) {
+        // A broken animation removes itself instead of stopping the whole render loop.
+        try {
+          this.life[i](this.now, dt);
+        } catch (error) {
+          this.life.splice(i, 1);
+          i -= 1;
+          console.error("smart-city animation stopped:", error);
+        }
+      }
     },
 
     bounce: function (id) {

@@ -15,6 +15,8 @@
       this.el.sceneEl.addEventListener("enter-vr", async () => {
         const scene = this.el.sceneEl;
         if (!scene.is("ar-mode")) return;
+        // The stall watchdog only arms once this session has rendered its first frame.
+        this.lastFrameTime = 0;
         const session = scene.renderer.xr.getSession();
         if (!session) return;
         try {
@@ -40,19 +42,37 @@
     },
 
     tick: function () {
+      this.lastFrameTime = performance.now();
       if (this.placed || !this.hitTestSource) return;
+      // An error thrown here would stop the whole render loop and freeze the camera
+      // view, so scanning errors are caught and, if they persist, reported instead.
+      try {
+        this.updateReticle();
+      } catch (error) {
+        this.tickErrors = (this.tickErrors || 0) + 1;
+        if (this.tickErrors > 30) {
+          this.hitTestSource = null;
+          if (window.arUI) window.arUI.error(`Surface scanning stopped: ${error.message}`);
+        }
+      }
+    },
+
+    updateReticle: function () {
       const frame = this.el.sceneEl.frame;
       if (!frame) return;
       const referenceSpace = this.el.sceneEl.renderer.xr.getReferenceSpace();
       const hits = frame.getHitTestResults(this.hitTestSource);
       const pose = hits.length ? hits[0].getPose(referenceSpace) : null;
-      if (!pose) {
+      if (pose) {
+        const p = pose.transform.position;
+        this.reticle.object3D.position.set(p.x, p.y, p.z);
+        this.lastHitTime = performance.now();
+        this.setSurfaceVisible(true);
+      } else if (performance.now() - (this.lastHitTime || 0) > 400) {
+        // Hit tests drop out for a frame or two all the time; without this grace
+        // period the hint text flipped back and forth and the overlay redrew constantly.
         this.setSurfaceVisible(false);
-        return;
       }
-      const p = pose.transform.position;
-      this.reticle.object3D.position.set(p.x, p.y, p.z);
-      this.setSurfaceVisible(true);
     },
 
     // Only touch the DOM when the state changes. Updating the DOM overlay on every
@@ -98,6 +118,9 @@
         new THREE.Quaternion(orientation.x, orientation.y, orientation.z, orientation.w)
       );
       this.raycaster.set(new THREE.Vector3(origin.x, origin.y, origin.z), direction);
+      // Make sure the hit boxes are where the city is now, even if no frame has
+      // rendered since it was placed, moved or resized.
+      this.city.object3D.updateMatrixWorld(true);
       const intersections = this.raycaster.intersectObjects(this.targetObjects(), true);
       for (const hit of intersections) {
         const target = window.SmartCity.targetFromObject(hit.object);
@@ -332,6 +355,33 @@
       status.textContent = "Camera paused";
     });
 
+    // Show script errors in the status pill, so a stuck tablet can at least say why.
+    window.addEventListener("error", function (event) {
+      status.textContent = `Error: ${event.message || "unknown"}`;
+    });
+    window.addEventListener("unhandledrejection", function (event) {
+      const reason = event.reason;
+      status.textContent = `Error: ${reason && reason.message ? reason.message : reason}`;
+    });
+
+    // If an error stops the XR render loop, the camera picture freezes while the
+    // overlay keeps working. The loop cannot be restarted from outside, so end the
+    // session instead: the exit-vr handler then shows the "Restart camera AR" card.
+    // ar.html?stall=8000 changes the limit in milliseconds; ar.html?stall=0 disables it.
+    const stallParam = new URLSearchParams(window.location.search).get("stall");
+    const stallLimit = stallParam === null ? 4000 : Number(stallParam);
+    window.setInterval(function () {
+      const placement = document.getElementById("placement").components["surface-placement"];
+      const xrSession = scene.xrSession;
+      if (!(stallLimit > 0) || !inAR || !placement || !placement.lastFrameTime || !xrSession) return;
+      if (xrSession.visibilityState !== "visible" || document.visibilityState !== "visible") return;
+      if (performance.now() - placement.lastFrameTime > stallLimit) {
+        placement.lastFrameTime = 0;
+        status.textContent = "Camera view stopped";
+        scene.exitVR();
+      }
+    }, 1000);
+
     startButton.addEventListener("click", launchAR);
     startButton.addEventListener("touchend", launchAR, { passive: false });
 
@@ -346,11 +396,14 @@
       }
     }, { capture: true, passive: false });
 
-    // Only taps on the empty overlay go through to the city. Before, a tap on the
-    // success card, mission bar or any text (anything that was not a button) also
-    // fired an AR tap on the building behind it, which re-opened the popup.
+    // Taps on panels and buttons stay in the panels; taps on empty screen (or on the
+    // see-through hint, toast and confetti layers) go to the city. Before, a tap on
+    // the success card text also fired an AR tap on the building behind it.
     overlay.addEventListener("beforexrselect", function (event) {
-      if (event.target !== overlay) event.preventDefault();
+      const target = event.target;
+      if (target.closest && target.closest(".start-card, .controls, .mission, .success, .back, button, a")) {
+        event.preventDefault();
+      }
     });
 
     document.addEventListener("smart-system-select", function (event) {

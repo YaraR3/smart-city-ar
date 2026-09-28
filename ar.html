@@ -13,10 +13,13 @@
     button, a { font: inherit; -webkit-tap-highlight-color: transparent; }
     a-scene, .a-canvas { width: 100vw !important; height: 100vh !important; z-index: 0 !important; }
     .a-enter-vr, .a-enter-ar, .a-orientation-modal { display: none !important; }
+    /* The overlay carries class a-no-style so A-Frame does not restyle it in AR: its rule
+       ".a-dom-overlay > * { pointer-events: auto }" forced the full-screen confetti layer to
+       catch every tap, which blocked the buttons and the city. */
     #overlay { position: fixed !important; z-index: 2147483646 !important; inset: 0; pointer-events: auto !important; touch-action: manipulation; }
     .topbar { position: absolute; top: 0; left: 0; right: 0; pointer-events: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: max(12px, env(safe-area-inset-top)) 12px 12px; background: linear-gradient(180deg, rgba(4,19,35,.9), transparent); }
     .back, .status { min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 13px; color: white; background: rgba(4,24,43,.82); font-weight: 850; text-decoration: none; pointer-events: auto; touch-action: manipulation; }
-    .status { min-height: 39px; font-size: .88rem; pointer-events: none; }
+    .status { min-height: 39px; max-width: 60vw; font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
     .start-card { position: absolute; left: 50%; top: 50%; width: min(90vw, 470px); transform: translate(-50%,-50%); padding: 23px; border: 1px solid rgba(255,255,255,.2); border-radius: 24px; background: rgba(5,25,45,.94); box-shadow: 0 22px 70px rgba(0,0,0,.36); text-align: center; backdrop-filter: blur(15px); pointer-events: auto; }
     .start-icon { display: grid; width: 62px; height: 62px; place-items: center; margin: 0 auto 13px; border-radius: 19px; background: linear-gradient(145deg, #0b78c9, #23c3d9); font-size: 1.9rem; }
     .start-card h1 { margin: 0; font-size: clamp(1.55rem, 7vw, 2.2rem); line-height: 1.1; }
@@ -29,7 +32,7 @@
     .fallback p { margin: 0 0 11px; color: #ffe8b8; font-size: .92rem; }
     .fallback-links { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .fallback a { min-height: 46px; display: grid; place-items: center; padding: 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 12px; color: white; text-decoration: none; font-weight: 800; }
-    .placement-hint { position: absolute; top: 76px; left: 50%; width: min(88vw, 430px); transform: translateX(-50%); padding: 11px 15px; border-radius: 14px; background: rgba(4,24,43,.86); box-shadow: 0 8px 28px rgba(0,0,0,.2); text-align: center; font-weight: 800; line-height: 1.35; transition: opacity .2s; pointer-events: none; }
+    .placement-hint { position: absolute; top: 76px; left: 50%; width: min(88vw, 430px); transform: translateX(-50%); padding: 11px 15px; border-radius: 14px; background: rgba(4,24,43,.86); box-shadow: 0 8px 28px rgba(0,0,0,.2); text-align: center; font-weight: 800; line-height: 1.35; transition: opacity .2s; pointer-events: none !important; }
     .placement-hint.hidden { opacity: 0; }
     .controls { position: absolute; left: 50%; bottom: 165px; display: flex; gap: 7px; transform: translateX(-50%) translateY(12px); opacity: 0; transition: .2s ease; pointer-events: none; }
     .controls.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
@@ -51,9 +54,9 @@
     .success p { margin: 10px 0 17px; line-height: 1.45; }
     .badge-earned { display: inline-flex; margin: 10px 0 0; padding: 7px 11px; border-radius: 999px; color: #075b9f; background: #e3f5ff; font-size: .82rem; font-weight: 900; }
     .success button { width: 100%; min-height: 49px; border: 0; border-radius: 13px; color: white; background: #0878bd; font-weight: 900; }
-    .toast { position: absolute; left: 50%; top: 126px; width: max-content; max-width: 84vw; transform: translate(-50%,-9px); padding: 10px 14px; border-radius: 18px; text-align: center; pointer-events: none; color: #13334d; background: #fff; box-shadow: 0 10px 32px rgba(0,0,0,.28); font-weight: 850; opacity: 0; transition: .2s ease; }
+    .toast { position: absolute; left: 50%; top: 126px; width: max-content; max-width: 84vw; transform: translate(-50%,-9px); padding: 10px 14px; border-radius: 18px; text-align: center; pointer-events: none !important; color: #13334d; background: #fff; box-shadow: 0 10px 32px rgba(0,0,0,.28); font-weight: 850; opacity: 0; transition: .2s ease; }
     .toast.show { transform: translate(-50%,0); opacity: 1; }
-    .confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none !important; }
     .confetti i { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: confetti-fall 1.25s ease-in forwards; }
     @keyframes confetti-fall { to { transform: translate3d(var(--drift), 105vh, 0) rotate(620deg); opacity: .9; } }
     @media (max-height: 620px) {
@@ -64,7 +67,7 @@
   </style>
 </head>
 <body>
-  <div id="overlay">
+  <div id="overlay" class="a-no-style">
     <div class="topbar">
       <a class="back" href="index.html">← Back</a>
       <span class="status" id="status">Ready to start</span>
@@ -133,6 +136,6 @@
       <a-camera></a-camera>
     </a-scene>
   </template>
-  <script src="boot-ar.js?v=12"></script>
+  <script src="boot-ar.js?v=13"></script>
 </body>
 </html>
