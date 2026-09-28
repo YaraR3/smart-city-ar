@@ -41,6 +41,12 @@ Double-click `run-local-server.bat`. It starts a local server at:
 
 Python must be installed for this option.
 
+## Testing the camera AR without a phone
+
+`python test/run_ar_test.py` runs `ar.html` in headless Chrome against a fake WebXR device: it starts AR, places the city, finds all six systems, closes every popup and checks the stall watchdog. The last line must say `RESULT: PASS`. Run it after changing `ar.html`, `markerless.js` or `city.js`.
+
+The page is published from GitHub Pages at https://yarar3.github.io/smart-city-ar/ (repo `YaraR3/smart-city-ar`). Pushing to `main` updates the site in about a minute. In camera AR, `ar.html?stall=0` disables the stall watchdog and `ar.html?stall=8000` makes it wait 8 seconds.
+
 ## Important AR note
 
 Interactive 3D can run locally, but phone/tablet camera AR normally requires HTTPS. To test markerless AR on another device, publish the edited folder to an HTTPS host and open it in a compatible Android Chrome browser.
